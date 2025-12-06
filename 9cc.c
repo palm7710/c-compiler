@@ -1,3 +1,5 @@
+// ターミナルで `arch -x86_64 bash` でスタート
+
 #include <stdio.h>
 #include <stdlib.h>
 
