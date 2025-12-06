@@ -10,10 +10,10 @@ int main(int ac, char **av)
     }
 
     // Intel記法
-    printf(".intel_syntax noprefix\n");
-    printf(".globl main\n");
-    printf("main:\n");
-    printf("  mov rax, %d\n", atoi(av[1]));
-    printf("  ret\n");
+    printf("global _main\n");
+    printf("section .text\n");
+    printf("_main:\n");
+    printf("    mov rax, %d\n", atoi(av[1]));
+    printf("    ret\n");
     return 0;
 }
