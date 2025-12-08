@@ -1,7 +1,11 @@
 // ターミナルで `arch -x86_64 bash` でスタート
 
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(int ac, char **av)
 {
