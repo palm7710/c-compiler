@@ -21,7 +21,7 @@ struct Token {
     Token *next;    // 整数トークン
     int val;        // kind が TK_NUM の場合、その数値
     char *str;      // トークン文字列
-}
+};
 
 // 現在直目しているトークン
 Token *token;
@@ -109,12 +109,12 @@ int main(int ac, char **av)
 {
     if (ac != 2)
     {
-        fprintf(stderr, "引数の個数が正しくありません\n");
+        error("引数の個数が正しくありません");
         return 1;
     }
 
-    char *p = av[1];
-    long val = strtol(p, &p, 10);
+    // トークナイズする
+    token = tokenize(av[1]);
 
     // Intel記法
     printf("global _main\n");
@@ -122,23 +122,21 @@ int main(int ac, char **av)
     printf("_main:\n");
     printf("    mov rax, %d\n", atoi(av[1]));
 
-    while (*p)
+    while (!at_eof())
     {
-        if (*p == '+')
+        if (consume('+'))
         {
-            p++;
-            printf("  add rax, %ld\n", strtol(p, &p, 10));
+            printf("  add rax, %d\n", expect_number());
             continue;
         }
 
-        if (*p == '-')
+        if (consume('-'))
         {
-            p++;
-            printf("  sub rax, %ld\n", strtol(p, &p, 10));
+            printf("  sub rax, %d\n", expect_number());
             continue;
         }
 
-        fprintf(stderr, "予期しない文字です: '%c'\n", *p);
+        error("予期しない文字です: '%c'\n");
         return 1;
     }
 
