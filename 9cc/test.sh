@@ -1,4 +1,7 @@
 #!/bin/bash
+
+cc -arch x86_64 9cc.c -o 9cc || exit 1
+
 assert() {
     expected="$1"
     input="$2"
@@ -20,5 +23,6 @@ assert() {
 assert 0 0
 assert 42 42
 assert 21 "5+20-4"
+assert 41 " 12 + 34 - 5 "
 
 echo OK

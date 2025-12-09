@@ -62,7 +62,7 @@ int expect_number() {
 }
 
 bool at_eof() {
-    return token->kind = TK_EOF;
+    return token->kind == TK_EOF;
 }
 
 // 新しいトークンを作成してcurに繋げる
@@ -120,7 +120,9 @@ int main(int ac, char **av)
     printf("global _main\n");
     printf("section .text\n");
     printf("_main:\n");
-    printf("    mov rax, %d\n", atoi(av[1]));
+
+    // 式の最初が数かチェック
+    printf("    mov rax, %d\n", expect_number());
 
     while (!at_eof())
     {
@@ -130,14 +132,8 @@ int main(int ac, char **av)
             continue;
         }
 
-        if (consume('-'))
-        {
-            printf("  sub rax, %d\n", expect_number());
-            continue;
-        }
-
-        error("予期しない文字です: '%c'\n");
-        return 1;
+        expect('-');
+        printf("  sub rax, %d\n", expect_number());
     }
 
     printf("    ret\n");
