@@ -139,7 +139,7 @@ struct Node {
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     int val;       // kindがND_NUMの場合のみ使う
-}
+};
 
 // 左辺と右辺を受け取る2項演算子
 Node *new_node(NodeKind kind, Node *lhs, Node *rhs) {
@@ -159,6 +159,10 @@ Node *new_node_num(int val) {
 }
 
 // パーサー
+Node *expr();
+Node *mul();
+Node *primary();
+
 Node *expr() {
     Node *node = mul();
 
@@ -224,6 +228,8 @@ void gen(Node *node) {
             printf("  cqo\n");
             printf("  idiv rdi\n");
             break;
+        case ND_NUM:
+            break;
     }
 
     printf("  push rax\n");
@@ -237,9 +243,9 @@ int main(int ac, char **av)
         return 1;
     }
 
-    // トークナイズする
+    // トークナイズしてパースする
     user_input = av[1];
-    token = tokenize(user_input);
+    token = tokenize();
     Node *node = expr();
 
     // Intel記法
@@ -247,21 +253,11 @@ int main(int ac, char **av)
     printf("section .text\n");
     printf("_main:\n");
 
-    // 式の最初が数かチェック
-    printf("    mov rax, %d\n", expect_number());
+    // 抽象構文木を降りながらコードを生成
+    gen(node);
 
-    while (!at_eof())
-    {
-        if (consume('+'))
-        {
-            printf("  add rax, %d\n", expect_number());
-            continue;
-        }
-
-        expect('-');
-        printf("  sub rax, %d\n", expect_number());
-    }
-
+    // RAXにロードして関数からの返り値とする
+    printf("  pop rax\n");
     printf("    ret\n");
     return 0;
 }
