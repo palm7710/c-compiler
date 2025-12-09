@@ -7,6 +7,25 @@
 #include <stdlib.h>
 #include <string.h>
 
+// トークンの種類
+typedef enum {
+    TK_RESERVED, //記号
+    TK_NUM,      // 整数トークン
+    TK_EOF,      // 入力の終わりを表すトークン
+} TokenKind;
+
+typedef struct Token Token;
+
+struct Token {
+    TokenKind kind; // トークンの型
+    Token *next;    // 整数トークン
+    int val;        // kind が TK_NUM の場合、その数値
+    char *str;      // トークン文字列
+}
+
+// 現在直目しているトークン
+Token *token;
+
 int main(int ac, char **av)
 {
     if (ac != 2)
