@@ -1,5 +1,7 @@
 // ターミナルで `arch -x86_64 bash` でスタート
 
+#include "9cc.h"
+
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
