@@ -75,13 +75,24 @@ static void gen_expr(Node *node) {
     error("不正な式です");
 }
 
+static void gen_stmt(Node *node) {
+    if (node->kind == ND_EXPR_STMT) {
+        gen_expr(node->lhs);
+        return;
+    }
+
+    error("無効な文です");
+}
+
 void codegen(Node *node) {
     printf(".globl _main\n");
     printf(".text\n");
     printf("_main:\n");
 
-    gen_expr(node);
-    printf("  ret\n");
+    for (Node *n = node; n; n = n->next) {
+        gen_stmt(n);
+        assert(depth == 0);
+    }
 
-    assert(depth == 0);
+    printf("  ret\n");
 }

@@ -40,6 +40,7 @@ typedef enum {
     ND_NE,  // !=
     ND_LT,  // <
     ND_LE,  // <=
+    ND_EXPR_STMT, // セミコロン
     ND_NUM, // 整数
 } NodeKind;
 
@@ -48,6 +49,7 @@ typedef struct Node Node;
 // 抽象構文木のノードの型
 struct Node {
     NodeKind kind; // ノードの型
+    Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     int val;       // kindがND_NUMの場合のみ使う
