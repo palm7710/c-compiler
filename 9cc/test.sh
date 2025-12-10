@@ -6,7 +6,7 @@ CYAN='\033[36m'
 WHITE='\033[37m'
 RESET='\033[0m'
 
-cc -arch x86_64 9cc.c -o 9cc || exit 1
+cc -arch x86_64 9cc.c codegen.c parse.c tokenize.c -o 9cc || exit 1
 
 assert() {
     expected="$1"

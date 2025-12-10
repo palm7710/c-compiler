@@ -10,7 +10,7 @@
 
 // トークンの種類
 typedef enum {
-    TK_RESERVED, //記号
+    TK_PUNCT,    //記号
     TK_NUM,      // 整数トークン
     TK_EOF,      // 入力の終わりを表すトークン
 } TokenKind;
@@ -20,17 +20,12 @@ typedef struct Token Token;
 struct Token {
     TokenKind kind; // トークンの型
     Token *next;    // 整数トークン
-    int val;        // kind が TK_NUM の場合、その数値
-    char *str;      // トークン文字列
+    char *loc;      // kind が TK_NUM の場合、その数値
     int len;        // トークンの長さ
+    char val;       // 数値の場合の値
 };
 
-void error(char *fmt, ...);
-void error_at(char *loc, char *fmt, ...);
-void error_tok(Token *tok, char *fmt, ...);
-bool equal(Token *tok, char *op);
-Token *skip(Token *tok, char *op);
-Token *tokenize(char *input);
+extern char *user_input;
 
 // parse.c
 
@@ -40,6 +35,7 @@ typedef enum {
     ND_SUB, // -
     ND_MUL, // *
     ND_DIV, // /
+    ND_NEG, // unary -
     ND_EQ,  // ==
     ND_NE,  // !=
     ND_LT,  // <
@@ -55,7 +51,17 @@ struct Node {
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     int val;       // kindがND_NUMの場合のみ使う
+    int offset;    // kindがND_LVARの場合のみ使う
 };
+
+void error(char *fmt, ...);
+void error_at(char *loc, char *fmt, ...);
+void error_tok(Token *tok, char *fmt, ...);
+bool equal(Token *tok, char *op);
+Token *skip(Token *tok, char *op);
+Token *tokenize(char *p);
+Node *parse(Token *tok);
+void codegen(Node *node);
 
 Node *parse(Token *tok);
 
