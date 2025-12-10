@@ -13,7 +13,7 @@ assert() {
     input="$2"
 
     ./9cc "$input" > tmp.s
-    nasm -f macho64 tmp.s -o tmp.o
+    cc -arch x86_64 -c tmp.s -o tmp.o
     cc -arch x86_64 tmp.o -o tmp 2>/dev/null
     ./tmp
     actual="$?"

@@ -43,7 +43,7 @@ static Node *expr(Token **rest, Token *tok) {
 }
 
 static Node *equality(Token **rest, Token *tok) {
-    Node *node = relational(rest, tok);
+    Node *node = relational(&tok, tok);
 
     for (;;) {
         if (equal(tok, "==")) {
@@ -61,7 +61,7 @@ static Node *equality(Token **rest, Token *tok) {
 }
 
 static Node *relational(Token **rest, Token *tok) {
-    Node *node = add(rest, tok);
+    Node *node = add(&tok, tok);
 
     for (;;) {
     if (equal(tok, "<")) {
@@ -90,7 +90,7 @@ static Node *relational(Token **rest, Token *tok) {
 }
 
 static Node *add(Token **rest, Token *tok) {
-    Node *node = mul(rest, tok);
+    Node *node = mul(&tok, tok);
 
     for (;;) {
     if (equal(tok, "+")) {
@@ -109,7 +109,7 @@ static Node *add(Token **rest, Token *tok) {
 }
 
 static Node *mul(Token **rest, Token *tok) {
-    Node *node = unary(rest, tok);
+    Node *node = unary(&tok, tok);
 
     for (;;) {
     if (equal(tok, "*")) {
@@ -152,7 +152,8 @@ static Node *primary(Token **rest, Token *tok) {
         return node;
     }
 
-    error_tok(tok, "式が必要です");
+    error_tok(tok, "数ではありません");
+    return NULL;
 }
 
 Node *parse(Token *tok) {

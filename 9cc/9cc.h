@@ -22,7 +22,7 @@ struct Token {
     Token *next;    // 整数トークン
     char *loc;      // kind が TK_NUM の場合、その数値
     int len;        // トークンの長さ
-    char val;       // 数値の場合の値
+    int val;        // 数値の場合の値
 };
 
 extern char *user_input;

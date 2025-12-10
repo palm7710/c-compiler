@@ -87,8 +87,8 @@ Token *tokenize(char *p) {
 
         int punct_len = read_punct(p);
         if (punct_len) {
-            cur->next = new_token(TK_PUNCT, p, p + punct_len);
-            p += cur->len;
+            cur = cur->next = new_token(TK_PUNCT, p, p + punct_len);
+            p += punct_len;
             continue;
         }
 
