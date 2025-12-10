@@ -9,23 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// トークンの種類
-typedef enum {
-    TK_RESERVED, //記号
-    TK_NUM,      // 整数トークン
-    TK_EOF,      // 入力の終わりを表すトークン
-} TokenKind;
-
-typedef struct Token Token;
-
-struct Token {
-    TokenKind kind; // トークンの型
-    Token *next;    // 整数トークン
-    int val;        // kind が TK_NUM の場合、その数値
-    char *str;      // トークン文字列
-    int len;        // トークンの長さ
-};
-
 // 現在直目しているトークン
 Token *token;
 
@@ -142,29 +125,6 @@ Token *tokenize() {
     new_token(TK_EOF, cur, p, 0);
     return head.next;
 }
-
-// 抽象構文木のノードの種類
-typedef enum {
-    ND_ADD, // +
-    ND_SUB, // -
-    ND_MUL, // *
-    ND_DIV, // /
-    ND_EQ,  // ==
-    ND_NE,  // !=
-    ND_LT,  // <
-    ND_LE,  // <=
-    ND_NUM, // 整数
-} NodeKind;
-
-typedef struct Node Node;
-
-// 抽象構文木のノードの型
-struct Node {
-    NodeKind kind; // ノードの型
-    Node *lhs;     // 左辺
-    Node *rhs;     // 右辺
-    int val;       // kindがND_NUMの場合のみ使う
-};
 
 // 左辺と右辺を受け取る2項演算子
 Node *new_node(NodeKind kind) {
