@@ -21,6 +21,7 @@ struct Token {
     Token *next;    // 整数トークン
     int val;        // kind が TK_NUM の場合、その数値
     char *str;      // トークン文字列
+    int len;        // トークンの長さ
 };
 
 // 現在直目しているトークン
@@ -52,8 +53,10 @@ void error_at(char *loc, char *fmt, ...) {
 
 // 次のトークンが記号の時は、1つ進める
 // 真を返す。それ以外は偽を返す。
-bool consume(char op) {
-    if (token->kind != TK_RESERVED || token->str[0] != op)
+bool consume(char *op) {
+    if (token->kind != TK_RESERVED || 
+        strlen(op) != token->len ||
+        memcmp(token->str, op, token->len))
         return false;
     token = token->next;
     return true;
