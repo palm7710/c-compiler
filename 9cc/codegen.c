@@ -12,6 +12,19 @@ static void pop(char *arg) {
     depth--;
 }
 
+// 指定されたノードの絶対アドレスを計算します。
+// 指定されたノードがメモリ内に存在しない場合はエラーになります。
+static void gen_addr(Node *node) {
+    if (node->kind == ND_VAR) {
+        int offset = (node->name - 'a' + 1) * 8;
+        printf("  lea %d(%%rbp), %%rax\n", -offset);
+        return;
+    }
+
+    error("not an lvalue");
+}
+
+
 static void gen_expr(Node *node) {
     switch (node->kind) {
     case ND_NUM:
