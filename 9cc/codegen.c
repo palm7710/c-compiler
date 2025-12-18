@@ -34,6 +34,17 @@ static void gen_expr(Node *node) {
         gen_expr(node->lhs);
         printf("  negq %%rax\n");
         return;
+    case ND_VAR:
+        gen_addr(node);
+        printf("  movq (%%rax), %%rax\n");
+        return;
+    case ND_ASSIGN:
+        gen_addr(node->lhs);
+        push();
+        gen_expr(node->rhs);
+        pop("%rdi");
+        printf("  movq %%rax, (%%rdi)\n");
+        return;
     default:
         break;
     }
@@ -102,10 +113,16 @@ void codegen(Node *node) {
     printf(".text\n");
     printf("_main:\n");
 
+    // 初期化処理
+    printf("  pushq %%rbp\n");
+    printf("  movq %%rsp, %%rbp\n");
+    printf("  subq $208, %%rsp\n");
+
     for (Node *n = node; n; n = n->next) {
         gen_stmt(n);
         assert(depth == 0);
     }
-
+    printf("  movq %%rbp, %%rsp\n");
+    printf("  popq %%rbp\n");
     printf("  ret\n");
 }

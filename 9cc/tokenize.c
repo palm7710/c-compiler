@@ -85,6 +85,18 @@ Token *tokenize(char *p) {
             continue;
         }
 
+        // 識別子 (単一文字のみ)
+        if ('a' <= *p && *p <= 'z') {
+            char *start = p;
+            p++;
+            // 複数文字の識別子はエラー
+            if ('a' <= *p && *p <= 'z') {
+                error_at(start, "トークナイズできません");
+            }
+            cur = cur->next = new_token(TK_IDENT, start, p);
+            continue;
+        }
+
         int punct_len = read_punct(p);
         if (punct_len) {
             cur = cur->next = new_token(TK_PUNCT, p, p + punct_len);
