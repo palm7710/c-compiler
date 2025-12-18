@@ -109,14 +109,7 @@ static Node *expr_stmt(Token **rest, Token *tok) {
 // パーサー
 // expr = assign
 static Node *expr(Token **rest, Token *tok) {
-    // 再帰深度チェック
-    if (++recursion_depth > MAX_RECURSION_DEPTH) {
-        error("式が複雑すぎます（スタックオーバーフロー防止）");
-    }
-    
-    Node *node = assign(rest, tok);
-    recursion_depth--;
-    return node;
+    return assign(rest, tok);
 }
 
 // assign = equality ("=" assign)?
@@ -227,7 +220,12 @@ static Node *unary(Token **rest, Token *tok) {
 static Node *primary(Token **rest, Token *tok) {
     // 次のトークンが "(" なら、"(" expr ")"
     if (equal(tok, "(")) {
+        if (++recursion_depth > MAX_RECURSION_DEPTH) {
+            error("式が複雑すぎます");
+        }
+        
         Node *node = expr(&tok, tok->next);
+        recursion_depth--;
         *rest = skip(tok, ")");
         return node;
     }

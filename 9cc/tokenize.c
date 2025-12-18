@@ -109,6 +109,11 @@ Token *tokenize(char *p) {
                 error_at(p, "数値の解析に失敗しました");
             }
             
+            // 数値の後に不正な文字が続いていないかチェック
+            if (endptr < p + strlen(p) && (isalpha(*endptr) || *endptr == 'x' || *endptr == '.')) {
+                error_at(p, "トークナイズできません");
+            }
+            
             cur->val = (int)val;
             cur->len = endptr - q;
             p = endptr;
@@ -116,11 +121,17 @@ Token *tokenize(char *p) {
         }
 
         // 識別子 (単一文字のみ)
-        if ('a' <= *p && *p <= 'z') {
+        if (('a' <= *p && *p <= 'z') || ('A' <= *p && *p <= 'Z')) {
             char *start = p;
+            
+            // 小文字のみ許可
+            if ('A' <= *p && *p <= 'Z') {
+                error_at(start, "トークナイズできません");
+            }
+            
             p++;
-            // 複数文字の識別子はエラー
-            if ('a' <= *p && *p <= 'z') {
+            // 複数文字の識別子や数字が続く場合はエラー
+            if (('a' <= *p && *p <= 'z') || ('A' <= *p && *p <= 'Z') || isdigit(*p)) {
                 error_at(start, "トークナイズできません");
             }
             cur = cur->next = new_token(TK_IDENT, start, p);
