@@ -1,3 +1,4 @@
+#define _POSIX_C_SOURCE 200809L // POSIX標準（2008年版）の機能を有効
 #include <assert.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -5,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+typedef struct Node Node;
 
 // tokenize.c
 
@@ -30,6 +33,22 @@ extern char *user_input;
 
 // parse.c
 
+// ローカル変数
+typedef struct Obj Obj;
+struct Obj {
+    Obj *next;
+    char *name;  // 変数名
+    int offset; // RBPからのオフセット
+};
+
+// 関数
+typedef struct Function Function;
+struct Function {
+    Node *body;
+    Obj *locals;
+    int stack_size;
+};
+
 // 抽象構文木のノードの種類
 typedef enum {
     ND_ADD,       // +
@@ -47,8 +66,6 @@ typedef enum {
     ND_NUM,       // 整数
 } NodeKind;
 
-typedef struct Node Node;
-
 // 抽象構文木のノードの型
 struct Node {
     NodeKind kind; // ノードの型
@@ -56,7 +73,7 @@ struct Node {
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     int val;       // kindがND_NUMの場合のみ使う
-    char name;     // kindがND_VARの場合のみ使う
+    Obj *var;      // kindがND_VARの場合のみ使う
     int offset;    // kindがND_LVARの場合のみ使う
 };
 
@@ -66,11 +83,5 @@ void error_tok(Token *tok, char *fmt, ...);
 bool equal(Token *tok, char *op);
 Token *skip(Token *tok, char *op);
 Token *tokenize(char *p);
-Node *parse(Token *tok);
-void codegen(Node *node);
-
-Node *parse(Token *tok);
-
-// codegen.c
-
-void codegen(Node *code);
+Function *parse(Token *tok);
+void codegen(Function *code);

@@ -36,8 +36,13 @@ bool equal(Token * tok, char *op) {
 }
 
 Token *skip(Token *tok, char *op) {
-    if (!equal(tok, op))
-        error_tok(tok, "'%s' が必要です", op);
+    if (!equal(tok, op)) {
+        if (strlen(op) == 0) {
+            error_tok(tok, "予期しないトークンです");
+        } else {
+            error_tok(tok, "'%s' が必要です", op);
+        }
+    }
     return tok->next;
 }
 
@@ -52,6 +57,16 @@ static Token *new_token(TokenKind kind, char *start, char *end) {
 
 static bool startswith(char *p, char *q) {
     return memcmp(p, q, strlen(q)) == 0;
+}
+
+// 文字cが識別子の先頭文字として有効な場合にtrueを返します。
+static bool is_ident1(char c) {
+    return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') || c == '-';
+}
+
+// 文字 c が、識別子の2文字目以降（先頭以外）として有効な場合は true を返します。
+static bool is_ident2(char c) {
+    return is_ident1(c) || ('0' <= c && c <= '9');
 }
 
 static int read_punct(char *p) {

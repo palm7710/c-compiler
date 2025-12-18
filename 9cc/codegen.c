@@ -12,12 +12,17 @@ static void pop(char *arg) {
     depth--;
 }
 
+// 数値 n を align の最小の倍数に切り上げます。
+// 例えば、align_to(5, 8) は 8 を、align_to(11, 8) は 16 を返します。
+static int align_to(int n, int align) {
+    return (n + align - 1) / align * align;
+}
+
 // 指定されたノードの絶対アドレスを計算します。
 // 指定されたノードがメモリ内に存在しない場合はエラーになります。
 static void gen_addr(Node *node) {
     if (node->kind == ND_VAR) {
-        int offset = (node->name - 'a' + 1) * 8;
-        printf("  lea %d(%%rbp), %%rax\n", -offset);
+        printf("  lea %d(%%rbp), %%rax\n", node->var->offset);
         return;
     }
 
@@ -108,7 +113,18 @@ static void gen_stmt(Node *node) {
     error("無効な文です");
 }
 
-void codegen(Node *node) {
+static void assign_lvar_offsets(Function *prog) {
+    int offset = 0;
+    for (Obj *var = prog->locals; var; var = var->next) {
+        offset += 8;
+        var->offset = -offset;
+    }
+    prog->stack_size = align_to(offset, 16);
+}
+
+void codegen(Function *prog) {
+    assign_lvar_offsets(prog);
+
     printf(".globl _main\n");
     printf(".text\n");
     printf("_main:\n");
@@ -116,9 +132,9 @@ void codegen(Node *node) {
     // 初期化処理
     printf("  pushq %%rbp\n");
     printf("  movq %%rsp, %%rbp\n");
-    printf("  subq $208, %%rsp\n");
+    printf("  subq $%d, %%rsp\n", prog->stack_size);
 
-    for (Node *n = node; n; n = n->next) {
+    for (Node *n = prog->body; n; n = n->next) {
         gen_stmt(n);
         assert(depth == 0);
     }

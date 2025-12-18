@@ -13,7 +13,9 @@ int main(int ac, char **av) {
     
     user_input = av[1];
     Token *tok = tokenize(av[1]);
-    Node *node = parse(tok);
-    codegen(node);
+    Function *prog = parse(tok);
+
+    // ASTをトラバース（走査）し、アセンブリを出力します。
+    codegen(prog);
     return 0;
 }
