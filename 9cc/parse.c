@@ -4,6 +4,10 @@
 // このリストに蓄積されます。
 Obj *locals;
 
+// 再帰深度制限（スタックオーバーフロー防止）
+static int recursion_depth = 0;
+#define MAX_RECURSION_DEPTH 1000
+
 static Node *expr(Token **rest, Token *tok);
 static Node *expr_stmt(Token **rest, Token *tok);
 static Node *assign(Token **rest, Token *tok);
@@ -61,7 +65,23 @@ static Node *new_var_node(Obj *var) {
 // 新しいローカル変数作成
 static Obj *new_lvar(char *name) {
     Obj *var = calloc(1, sizeof(Obj));
-    var->name = name;
+    if (!var) {
+        error("メモリ不足です");
+    }
+    
+    // 変数名の長さ制限（バッファオーバーフロー防止）
+    size_t name_len = strlen(name);
+    if (name_len > 255) {
+        error("変数名が長すぎます");
+    }
+    
+    var->name = malloc(name_len + 1);
+    if (!var->name) {
+        free(var);
+        error("メモリ不足です");
+    }
+    strcpy(var->name, name);
+    
     var->next = locals;
     locals = var;
     return var;
@@ -89,7 +109,14 @@ static Node *expr_stmt(Token **rest, Token *tok) {
 // パーサー
 // expr = assign
 static Node *expr(Token **rest, Token *tok) {
-    return assign(rest, tok);
+    // 再帰深度チェック
+    if (++recursion_depth > MAX_RECURSION_DEPTH) {
+        error("式が複雑すぎます（スタックオーバーフロー防止）");
+    }
+    
+    Node *node = assign(rest, tok);
+    recursion_depth--;
+    return node;
 }
 
 // assign = equality ("=" assign)?
@@ -207,8 +234,21 @@ static Node *primary(Token **rest, Token *tok) {
 
     if (tok->kind == TK_IDENT) {
         Obj *var = find_var(tok);
-        if (!var)
-            var = new_lvar(strndup(tok->loc, tok->len));
+        if (!var) {
+            // 安全な文字列複製
+            if (tok->len <= 0 || tok->len > 255) {
+                error_tok(tok, "変数名の長さが不正です");
+            }
+            
+            char *name = malloc(tok->len + 1);
+            if (!name) {
+                error("メモリ不足です");
+            }
+            memcpy(name, tok->loc, tok->len);
+            name[tok->len] = '\0';
+            
+            var = new_lvar(name);
+        }
         *rest = tok->next;
         return new_var_node(var);
     }

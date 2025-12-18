@@ -1,4 +1,5 @@
 #include "9cc.h"
+#include <limits.h>
 
 // 入力プログラム
 static char *current_input;
@@ -95,8 +96,22 @@ Token *tokenize(char *p) {
             cur = cur->next = new_token(TK_NUM, p, p);
 
             char *q = p;
-            cur->val = strtoul(p, &p, 10);
-            cur->len = p - q;
+            char *endptr;
+            unsigned long val = strtoul(p, &endptr, 10);
+            
+            // 整数オーバーフローチェック
+            if (val > INT_MAX) {
+                error_at(p, "数値が大きすぎます");
+            }
+            
+            // 変換エラーチェック
+            if (endptr == p) {
+                error_at(p, "数値の解析に失敗しました");
+            }
+            
+            cur->val = (int)val;
+            cur->len = endptr - q;
+            p = endptr;
             continue;
         }
 

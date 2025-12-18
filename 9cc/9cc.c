@@ -13,6 +13,18 @@ int main(int ac, char **av) {
         return 1;
     }
     
+    // 入力長制限（DoS攻撃防止）
+    size_t input_len = strlen(av[1]);
+    if (input_len > 10000) {
+        fprintf(stderr, "エラー: プログラムが長すぎます（最大10000文字）\n");
+        return 1;
+    }
+    
+    if (input_len == 0) {
+        fprintf(stderr, "エラー: 空のプログラムです\n");
+        return 1;
+    }
+    
     user_input = av[1];
     Token *tok = tokenize(av[1]);
     Function *prog = parse(tok);

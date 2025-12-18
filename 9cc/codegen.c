@@ -1,13 +1,20 @@
 #include "9cc.h"
 
 static int depth;
+#define MAX_STACK_DEPTH 10000
 
 static void push(void) {
+    if (depth >= MAX_STACK_DEPTH) {
+        error("スタックが深すぎます");
+    }
     printf("  pushq %%rax\n");
     depth++;
 }
 
 static void pop(char *arg) {
+    if (depth <= 0) {
+        error("スタックが空です");
+    }
     printf("  popq %s\n", arg);
     depth--;
 }
