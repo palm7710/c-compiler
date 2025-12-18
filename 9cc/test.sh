@@ -42,6 +42,8 @@ assert_error() {
 }
 assert_error "1+3++" "数ではありません"
 assert_error "1 + foo + 5" "トークナイズできません"
+assert_error "42" "文の最後に ';' が必要です"
+assert_error "5" "文の最後に ';' が必要です。プログラム全体をシングルクォートで囲んでください"
 assert 0 '0;'
 assert 42 '42;'
 assert 21 '5+20-4;'

@@ -76,7 +76,11 @@ static Node *stmt(Token **rest, Token *tok) {
 static Node *expr_stmt(Token **rest, Token *tok) {
     Node *node = new_unary(ND_EXPR_STMT, expr(&tok, tok));
     if (!equal(tok, ";")) {
-        error_tok(tok, "';' が必要です");
+        if (tok->kind == TK_EOF) {
+            error_tok(tok, "文の最後に ';' が必要です。プログラム全体をシングルクォートで囲んでください");
+        } else {
+            error_tok(tok, "';' が必要です");
+        }
     }
     *rest = tok->next;
     return node;
