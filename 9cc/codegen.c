@@ -112,12 +112,17 @@ static void gen_expr(Node *node) {
 }
 
 static void gen_stmt(Node *node) {
-    if (node->kind == ND_EXPR_STMT) {
+    switch (node->kind) {
+    case ND_RETURN:
+        gen_expr(node->lhs);
+        printf("  jmp .L.return\n");
+        return;
+    case ND_EXPR_STMT:
         gen_expr(node->lhs);
         return;
+    default:
+        error("無効な文です");
     }
-
-    error("無効な文です");
 }
 
 static void assign_lvar_offsets(Function *prog) {
@@ -145,6 +150,7 @@ void codegen(Function *prog) {
         gen_stmt(n);
         assert(depth == 0);
     }
+    printf(".L.return:\n");
     printf("  movq %%rbp, %%rsp\n");
     printf("  popq %%rbp\n");
     printf("  ret\n");

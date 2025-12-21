@@ -16,6 +16,7 @@ typedef struct Node Node;
 typedef enum {
     TK_IDENT,    // 識別子
     TK_PUNCT,    // 記号
+    TK_KEYWORD,  // キーワード
     TK_NUM,      // 整数トークン
     TK_EOF,      // 入力の終わりを表すトークン
 } TokenKind;
@@ -62,6 +63,7 @@ typedef enum {
     ND_LT,        // <
     ND_LE,        // <=
     ND_ASSIGN,    // =
+    ND_RETURN,    // "return"
     ND_EXPR_STMT, // セミコロン
     ND_VAR,       //変数
     ND_NUM,       // 整数

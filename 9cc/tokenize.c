@@ -79,6 +79,12 @@ static int read_punct(char *p) {
     return ispunct(*p) ? 1 : 0;
 }
 
+static void convert_keywords(Token *tok) {
+    for (Token *t = tok; t->kind != TK_EOF; t = t->next)
+        if (equal(t, "return"))
+            t->kind = TK_KEYWORD;
+}
+
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize(char *p) {
     current_input = p;
@@ -120,21 +126,32 @@ Token *tokenize(char *p) {
             continue;
         }
 
-        // 識別子 (単一文字のみ)
+        // キーワードと識別子
         if (('a' <= *p && *p <= 'z') || ('A' <= *p && *p <= 'Z')) {
             char *start = p;
             
-            // 小文字のみ許可
+            // 大文字は許可しない
             if ('A' <= *p && *p <= 'Z') {
                 error_at(start, "トークナイズできません");
             }
             
-            p++;
-            // 複数文字の識別子や数字が続く場合はエラー
-            if (('a' <= *p && *p <= 'z') || ('A' <= *p && *p <= 'Z') || isdigit(*p)) {
+            // 識別子の文字を読み取り
+            while (('a' <= *p && *p <= 'z') || ('A' <= *p && *p <= 'Z') || ('0' <= *p && *p <= '9') || *p == '_') {
+                p++;
+            }
+            
+            int len = p - start;
+            
+            // キーワードチェック
+            if (len == 6 && memcmp(start, "return", 6) == 0) {
+                cur = cur->next = new_token(TK_PUNCT, start, p);
+            } else if (len == 1) {
+                // 単一文字の識別子のみ許可
+                cur = cur->next = new_token(TK_IDENT, start, p);
+            } else {
+                // 複数文字の識別子（キーワード以外）はエラー
                 error_at(start, "トークナイズできません");
             }
-            cur = cur->next = new_token(TK_IDENT, start, p);
             continue;
         }
 
@@ -149,5 +166,6 @@ Token *tokenize(char *p) {
     }
 
     cur = cur->next = new_token(TK_EOF, p, p);
+    convert_keywords(head.next);
     return head.next;
 }
