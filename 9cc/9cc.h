@@ -40,7 +40,7 @@ typedef struct Obj Obj;
 struct Obj {
     Obj *next;
     char *name;  // 変数名
-    int offset; // RBPからのオフセット
+    int offset;  // RBPからのオフセット
 };
 
 // 関数
@@ -64,6 +64,7 @@ typedef enum {
     ND_LE,        // <=
     ND_ASSIGN,    // =
     ND_RETURN,    // "return"
+    ND_BLOCK,     // { ... }
     ND_EXPR_STMT, // セミコロン
     ND_VAR,       //変数
     ND_NUM,       // 整数
@@ -75,6 +76,7 @@ struct Node {
     Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
+    Node *body;    // ブロック
     int val;       // kindがND_NUMの場合のみ使う
     Obj *var;      // kindがND_VARの場合のみ使う
     int offset;    // kindがND_LVARの場合のみ使う
