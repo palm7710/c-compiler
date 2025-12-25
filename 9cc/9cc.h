@@ -65,6 +65,7 @@ typedef enum {
     ND_ASSIGN,    // =
     ND_RETURN,    // "return"
     ND_IF,        // "if"
+    ND_FOR,       // "for"
     ND_BLOCK,     // { ... }
     ND_EXPR_STMT, // セミコロン
     ND_VAR,       //変数
@@ -77,10 +78,13 @@ struct Node {
     Node *next;    // 次のノード
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
-    // "if" ステートメント
+    // "if"
     Node *cond;
     Node *then;
     Node *els;
+    // "for"
+    Node *init;
+    Node *inc;
     //block
     Node *body;
     int val;       // kindがND_NUMの場合のみ使う
