@@ -38,7 +38,7 @@ static void gen_addr(Node *node) {
         return;
     }
 
-    error("not an lvalue");
+    error_tok(node->tok, "not an lvalue");
 }
 
 
@@ -113,7 +113,7 @@ static void gen_expr(Node *node) {
         return;
     }
 
-    error("不正な式です");
+    error_tok(node->tok, "invalid expression");
 }
 
 static void gen_stmt(Node *node) {
@@ -160,7 +160,7 @@ static void gen_stmt(Node *node) {
         gen_expr(node->lhs);
         return;
     default:
-        error("無効な文です");
+        error_tok(node->tok, "invalid statement");
     }
 }
 
