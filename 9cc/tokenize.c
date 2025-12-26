@@ -80,7 +80,7 @@ static int read_punct(char *p) {
 }
 
 static bool is_keyword(Token *tok) {
-    static char *kw[] = {"return", "if", "else", "for"};
+    static char *kw[] = {"return", "if", "else", "for", "while"};
 
     for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++)
         if (equal(tok, kw[i]))
@@ -159,6 +159,8 @@ Token *tokenize(char *p) {
             } else if (len == 4 && memcmp(start, "else", 4) == 0) {
                 cur = cur->next = new_token(TK_PUNCT, start, p);
             } else if (len == 3 && memcmp(start, "for", 3) == 0) {
+                cur = cur->next = new_token(TK_PUNCT, start, p);
+            } else if (len == 5 && memcmp(start, "while", 5) == 0) {
                 cur = cur->next = new_token(TK_PUNCT, start, p);
             } else if (len == 1) {
                 // 単一文字の識別子のみ許可

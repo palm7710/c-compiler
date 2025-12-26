@@ -65,7 +65,7 @@ typedef enum {
     ND_ASSIGN,    // =
     ND_RETURN,    // "return"
     ND_IF,        // "if"
-    ND_FOR,       // "for"
+    ND_FOR,       // "for" or "while"
     ND_BLOCK,     // { ... }
     ND_EXPR_STMT, // セミコロン
     ND_VAR,       //変数
