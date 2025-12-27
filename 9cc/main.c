@@ -1,6 +1,6 @@
 // ターミナルで `arch -x86_64 bash` でスタート
 
-#include "9cc.h"
+#include "compiler.h"
 
 char *user_input; 
 

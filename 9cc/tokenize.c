@@ -1,4 +1,4 @@
-#include "9cc.h"
+#include "compiler.h"
 #include <limits.h>
 
 // 入力プログラム

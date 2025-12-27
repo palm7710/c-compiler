@@ -1,4 +1,4 @@
-#include "9cc.h"
+#include "compiler.h"
 
 static int depth;
 #define MAX_STACK_DEPTH 10000
@@ -48,7 +48,6 @@ static void gen_addr(Node *node) {
 
     error_tok(node->tok, "not an lvalue");
 }
-
 
 static void gen_expr(Node *node) {
     switch (node->kind) {
