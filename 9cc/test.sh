@@ -6,7 +6,7 @@ CYAN='\033[36m'
 WHITE='\033[37m'
 RESET='\033[0m'
 
-cc -arch x86_64 main.c codegen.c parse.c tokenize.c -o 9cc || exit 1
+cc -arch x86_64 main.c codegen.c parse.c tokenize.c type.c -o 9cc || exit 1
 
 assert() {
     expected="$1"
@@ -105,11 +105,13 @@ assert 10 '{ i=0; while(i<10) { i=i+1; } return i; }'
 
 assert 3 '{ x=3; return *&x; }'
 assert 3 '{ x=3; y=&x; z=&y; return **z; }'
-assert 5 '{ x=3; y=5; return *(&x+8); }'
-assert 3 '{ x=3; y=5; return *(&y-8); }'
+assert 5 '{ x=3; y=5; return *(&x+1); }'
+assert 3 '{ x=3; y=5; return *(&y-1); }'
+assert 5 '{ x=3; y=5; return *(&x-(-1)); }'
 assert 5 '{ x=3; y=&x; *y=5; return x; }'
-assert 7 '{ x=3; y=5; *(&x+8)=7; return y; }'
-assert 7 '{ x=3; y=5; *(&y-8)=7; return x; }'
+assert 7 '{ x=3; y=5; *(&x+1)=7; return y; }'
+assert 7 '{ x=3; y=5; *(&y-2+1)=7; return x; }'
+assert 5 '{ x=3; return (&x+2)-&x+3; }'
 
 # セキュリティテスト
 echo -e "${CYAN}=== セキュリティテスト ===${RESET}"

@@ -8,6 +8,7 @@
 #include <string.h>
 #include <limits.h>
 
+typedef struct Type Type;
 typedef struct Node Node;
 
 // tokenize.c
@@ -26,6 +27,7 @@ typedef struct Token Token;
 struct Token {
     TokenKind kind; // トークンの型
     Token *next;    // 整数トークン
+    Type *ty;       // 型、例えば int や int へのポインタ
     char *loc;      // kind が TK_NUM の場合、その数値
     int len;        // トークンの長さ
     int val;        // 数値の場合の値
@@ -79,6 +81,7 @@ struct Node {
     NodeKind kind; // ノードの型
     Node *next;    // 次のノード
     Token *tok;    // 代表トークン
+    Type *ty;      // 式の型
     Node *lhs;     // 左辺
     Node *rhs;     // 右辺
     // "if"
@@ -94,6 +97,27 @@ struct Node {
     Obj *var;      // kindがND_VARの場合のみ使う
     int offset;    // kindがND_LVARの場合のみ使う
 };
+
+Function *parse(Token *tok);
+
+// type.c
+
+typedef enum {
+    TY_INT,
+    TY_PTR,
+} TypeKind;
+
+struct Type {
+    TypeKind kind;
+    Type *base;
+};
+
+extern Type *ty_int;
+
+bool is_integer(Type *ty);
+void add_type(Node *node);
+
+// codegen.c
 
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);

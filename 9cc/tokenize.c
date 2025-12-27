@@ -31,9 +31,11 @@ void error_tok(Token *tok, char *fmt, ...) {
     error_at(tok->loc, fmt, ap);
 }
 
-bool equal(Token * tok, char *op) {
-    return memcmp(tok->loc, op, tok->len) == 0 &&
-    op[tok->len] == '\0';
+bool equal(Token *tok, char *op) {
+    size_t op_len = strlen(op);
+    if (tok->len != (int)op_len)
+        return false;
+    return memcmp(tok->loc, op, op_len) == 0;
 }
 
 Token *skip(Token *tok, char *op) {
