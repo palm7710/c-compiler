@@ -45,6 +45,8 @@ assert_error "{ 1 + foo + 5 }" "undefined variable"
 assert_error "{ 42 }" "';' が必要です"
 assert_error "{ 5" "文の最後に ';' が必要です。プログラム全体をシングルクォートで囲んでください"
 assert_error "{ @; }" "数ではありません"
+assert_error "{ return 1 }" "';' が必要です"  # error_tok
+assert_error "{ A; }" "トークナイズできません"  # error_at
 assert 0 '{ return 0; }'
 assert 42 '{ return 42; }'
 assert 21 '{ return 5+20-4; }'
@@ -154,7 +156,7 @@ else
     exit 1
 fi
 
-# 深い再帰テスト（スタックオーバーフロー防止）
+# 深い再帰テスト（error() の発火確認）
 echo -e "${CYAN}深い再帰テスト${RESET}"
 deep_expr="1"
 for i in {1..1001}; do
