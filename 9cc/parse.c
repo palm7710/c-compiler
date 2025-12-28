@@ -8,6 +8,7 @@ Obj *locals;
 static int recursion_depth = 0;
 #define MAX_RECURSION_DEPTH 1000
 
+static Node *declaration(Token **rest, Token *tok);
 static Node *compound_stmt(Token **rest, Token *tok);
 static Node *stmt(Token **rest, Token *tok);
 static Node *expr(Token **rest, Token *tok);
@@ -66,7 +67,7 @@ static Node *new_var_node(Obj *var, Token *tok) {
 }
 
 // 新しいローカル変数作成
-static Obj *new_lvar(char *name) {
+static Obj *new_lvar(char *name, Type *ty) {
     Obj *var = calloc(1, sizeof(Obj));
     if (!var) {
         error("メモリ不足です");
@@ -85,9 +86,65 @@ static Obj *new_lvar(char *name) {
     }
     strcpy(var->name, name);
     
+    var->ty = ty;
     var->next = locals;
     locals = var;
     return var;
+}
+
+static char *get_ident(Token *tok) {
+    if (tok->kind != TK_IDENT)
+        error_tok(tok, "expected an identifier");
+    return strndup(tok->loc, tok->len);
+}
+
+// 宣言指定子 = "int"
+static Type *declspec(Token **rest, Token *tok) {
+    *rest = skip(tok, "int");
+    return ty_int;
+}
+
+// 宣言指定子 = "*"* ident(識別子)
+static Type *declarator(Token **rest, Token *tok, Type *ty) {
+    while (consume(&tok, tok, "*"))
+        ty = pointer_to(ty);
+
+    if (tok->kind != TK_IDENT)
+        error_tok(tok, "expected a variable name");
+
+    ty->name = tok;
+    *rest = tok->next;
+    return ty;
+}
+
+// 宣言 = declspec (declarator ("=" expr)? ("," declarator ("=" expr)?)*)? ";"
+static Node *declaration(Token **rest, Token *tok) {
+    Type *basety = declspec(&tok, tok);
+
+    Node head = {};
+    Node *cur = &head;
+    int i = 0;
+
+    while (!equal(tok, ";")) {
+        if (i++ > 0)
+            tok = skip(tok, ",");
+
+        Type *ty = declarator(&tok, tok, basety);
+        Obj *var = new_lvar(get_ident(ty->name), ty);
+
+        if (!equal(tok, "="))
+            continue;
+
+        Node *lhs = new_var_node(var, ty->name);
+        Node *rhs = assign(&tok, tok->next);
+        Node *node = new_binary(ND_ASSIGN, lhs, rhs, tok);
+        cur = cur->next = new_unary(ND_EXPR_STMT, node, tok);
+    }
+
+    Node *node = new_node(ND_BLOCK, tok);
+    node->body = head.next;
+    *rest = tok->next;
+    return node;
 }
 
 // stmt = "return" expr ";"
@@ -147,13 +204,16 @@ static Node *stmt(Token **rest, Token *tok) {
     return expr_stmt(rest, tok);
 }
 
-// compound-stmt = stmt* "}"
+// compound-stmt = (declaration | stmt)* "}"
 static Node *compound_stmt(Token **rest, Token *tok) {
     Node *node = new_node(ND_BLOCK, tok);
     Node head = {};
     Node *cur = &head;
     while (!equal(tok, "}")) {
-        cur = cur->next = stmt(&tok, tok);
+        if (equal(tok, "int"))
+            cur = cur->next = declaration(&tok, tok);
+        else
+            cur = cur->next = stmt(&tok, tok);
         add_type(cur);
     }
 
@@ -394,10 +454,7 @@ static Node *primary(Token **rest, Token *tok) {
             if (!name) {
                 error("メモリ不足です");
             }
-            memcpy(name, tok->loc, tok->len);
-            name[tok->len] = '\0';
-            
-            var = new_lvar(name);
+            error_tok(tok, "undefined variable");
         }
         *rest = tok->next;
         return new_var_node(var, tok);
