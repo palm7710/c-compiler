@@ -76,6 +76,10 @@ static void gen_expr(Node *node) {
         pop("%rdi");
         printf("  movq %%rax, (%%rdi)\n");
         return;
+    case ND_FUNCALL:
+        printf("  mov $0, %%rax\n");
+        printf("  call _%s\n", node->funcname);
+        return;
     default:
         break;
     }

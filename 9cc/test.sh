@@ -6,6 +6,11 @@ CYAN='\033[36m'
 WHITE='\033[37m'
 RESET='\033[0m'
 
+cat <<EOF | gcc -xc -c -o tmp2.o -
+int ret3() { return 3; }
+int ret5() { return 5; }
+EOF
+
 cc -arch x86_64 main.c codegen.c parse.c tokenize.c type.c -o 9cc || exit 1
 
 assert() {
@@ -14,7 +19,7 @@ assert() {
 
     ./9cc "$input" > tmp.s
     cc -arch x86_64 -c tmp.s -o tmp.o
-    cc -arch x86_64 tmp.o -o tmp 2>/dev/null
+    cc -arch x86_64 tmp.o -o tmp tmp2.o 2>/dev/null
     ./tmp
     actual="$?"
 
@@ -122,6 +127,9 @@ assert 7 '{ int x=3; int y=5; *(&y-2+1)=7; return x; }'
 assert 5 '{ int x=3; return (&x+2)-&x+3; }'
 assert 8 '{ int x, y; x=3; y=5; return x+y; }'
 assert 8 '{ int x=3, y=5; return x+y; }'
+
+assert 3 '{ return ret3(); }'
+assert 5 '{ return ret5(); }'
 
 # セキュリティテスト
 echo -e "${CYAN}=== セキュリティテスト ===${RESET}"
