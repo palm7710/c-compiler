@@ -2,6 +2,7 @@
 
 static int depth;
 static char *argreg[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+static Function *current_fn;
 #define MAX_STACK_DEPTH 10000
 
 static void gen_expr(Node *node);
@@ -87,7 +88,7 @@ static void gen_expr(Node *node) {
 
         for (int i = nargs - 1; i >= 0; i--)
             pop(argreg[i]);
-        
+
         printf("  mov $0, %%rax\n");
         printf("  call _%s\n", node->funcname);
         return;
@@ -184,7 +185,7 @@ static void gen_stmt(Node *node) {
         return;
     case ND_RETURN:
         gen_expr(node->lhs);
-        printf("  jmp .L.return\n");
+        printf("  jmp .L.return.%s\n", current_fn->name);
         return;
     case ND_EXPR_STMT:
         gen_expr(node->lhs);
@@ -195,30 +196,39 @@ static void gen_stmt(Node *node) {
 }
 
 static void assign_lvar_offsets(Function *prog) {
-    int offset = 0;
-    for (Obj *var = prog->locals; var; var = var->next) {
-        offset += 8;
-        var->offset = -offset;
-    }
-    prog->stack_size = align_to(offset, 16);
+    for (Function *fn = prog; fn; fn = fn->next)
+    {
+        int offset = 0;
+        for (Obj *var = prog->locals; var; var = var->next) {
+            offset += 8;
+            var->offset = -offset;
+        }
+        fn->stack_size = align_to(offset, 16);
+    } 
 }
 
 void codegen(Function *prog) {
     assign_lvar_offsets(prog);
 
-    printf(".globl _main\n");
-    printf(".text\n");
-    printf("_main:\n");
+    for (Function *fn = prog; fn; fn = fn->next)
+    {
+        printf("  .globl _%s\n", fn->name);
+        printf("_%s:\n", fn->name);
+        current_fn = fn;
 
-    // 初期化処理
-    printf("  pushq %%rbp\n");
-    printf("  movq %%rsp, %%rbp\n");
-    printf("  subq $%d, %%rsp\n", prog->stack_size);
+        // 初期化処理
+        printf("  pushq %%rbp\n");
+        printf("  movq %%rsp, %%rbp\n");
+        printf("  subq $%d, %%rsp\n", fn->stack_size);
 
-    gen_stmt(prog->body);
-    assert(depth == 0);
-    printf(".L.return:\n");
-    printf("  movq %%rbp, %%rsp\n");
-    printf("  popq %%rbp\n");
-    printf("  ret\n");
+        // コードを出力する
+        gen_stmt(fn->body);
+        assert(depth == 0);
+
+        // 終わり
+        printf(".L.return.%s:\n", fn->name);
+        printf("  movq %%rbp, %%rsp\n");
+        printf("  popq %%rbp\n");
+        printf("  ret\n");
+    }
 }
