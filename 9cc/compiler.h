@@ -97,6 +97,7 @@ struct Node {
     Node *body;
     // Function call
     char *funcname;
+    Node *args;
     
     int val;       // kindがND_NUMの場合のみ使う
     Obj *var;      // kindがND_VARの場合のみ使う
