@@ -51,11 +51,11 @@ assert_error() {
         exit 1
     fi
 }
-assert_error "int main() { 1+3++ }" "数ではありません"
+assert_error "int main() { 1+3++ }" "expected an expression"
 assert_error "int main() { 1 + foo + 5 }" "undefined variable"
 assert_error "int main() { 42 }" "';' が必要です"
 assert_error "int main() { 5" "文の最後に ';' が必要です。プログラム全体をシングルクォートで囲んでください"
-assert_error "int main() { @; }" "数ではありません"
+assert_error "int main() { @; }" "expected an expression"
 assert_error "int main() { return 1 }" "';' が必要です"  # error_tok
 assert_error "int main() { A; }" "トークナイズできません"  # error_at
 assert 0 'int main() { return 0; }'
@@ -137,6 +137,9 @@ assert 2 'int main() { return sub(5, 3); }'
 assert 21 'int main() { return add6(1,2,3,4,5,6); }'
 assert 66 'int main() { return add6(1,2,add6(3,4,5,6,7,8),9,10,11); }'
 assert 136 'int main() { return add6(1,2,add6(3,add6(4,5,6,7,8,9),10,11,12,13),14,15,16); }'
+assert 7 'int main() { return add2(3,4); } int add2(int x, int y) { return x+y; }'
+assert 1 'int main() { return sub2(4,3); } int sub2(int x, int y) { return x-y; }'
+assert 55 'int main() { return fib(9); } int fib(int x) { if (x<=1) return 1; return fib(x-1) + fib(x-2); }'
 
 assert 32 'int main() { return ret32(); } int ret32() { return 32; }'
 # セキュリティテスト

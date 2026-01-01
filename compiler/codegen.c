@@ -199,7 +199,7 @@ static void assign_lvar_offsets(Function *prog) {
     for (Function *fn = prog; fn; fn = fn->next)
     {
         int offset = 0;
-        for (Obj *var = prog->locals; var; var = var->next) {
+        for (Obj *var = fn->locals; var; var = var->next) {
             offset += 8;
             var->offset = -offset;
         }
@@ -220,6 +220,11 @@ void codegen(Function *prog) {
         printf("  pushq %%rbp\n");
         printf("  movq %%rsp, %%rbp\n");
         printf("  subq $%d, %%rsp\n", fn->stack_size);
+
+        // レジスタ経由で渡された引数をスタックに保存する
+        int i = 0;
+        for (Obj *var = fn->params; var; var = var->next)
+            printf("  movq %s, %d(%%rbp)\n", argreg[i++], var->offset);
 
         // コードを出力する
         gen_stmt(fn->body);
