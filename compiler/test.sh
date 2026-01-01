@@ -17,13 +17,13 @@ int add6(int a, int b, int c, int d, int e, int f) {
 }
 EOF
 
-cc -arch x86_64 main.c codegen.c parse.c tokenize.c type.c -o 9cc || exit 1
+cc -arch x86_64 main.c codegen.c parse.c tokenize.c type.c -o a.out || exit 1
 
 assert() {
     expected="$1"
     input="$2"
 
-    ./9cc "$input" > tmp.s
+    ./a.out "$input" > tmp.s
     cc -arch x86_64 -c tmp.s -o tmp.o
     cc -arch x86_64 tmp.o -o tmp tmp2.o 2>/dev/null
     ./tmp
@@ -41,7 +41,7 @@ assert_error() {
     input="$1"
     expected="$2"
 
-    output=$(./9cc "$input" 2>&1 >/dev/null)
+    output=$(./a.out "$input" 2>&1 >/dev/null)
 
     if echo "$output" | grep -q "$expected"; then
         echo -e "${CYAN}${input}${RESET} ${WHITE}=>${RESET} ${GREEN}error OK${RESET}"
@@ -151,7 +151,7 @@ assert_error "99999999999999999999;" "数値が大きすぎます"
 echo -e "${CYAN}入力長制限テスト${RESET}"
 long_input=$(printf 'a+%.0s' {1..5000})'1;'
 if [ ${#long_input} -gt 10000 ]; then
-    output=$(./9cc "$long_input" 2>&1 >/dev/null)
+    output=$(./a.out "$long_input" 2>&1 >/dev/null)
     if echo "$output" | grep -q "プログラムが長すぎます"; then
         echo -e "${CYAN}長すぎる入力${RESET} ${WHITE}=>${RESET} ${GREEN}error OK${RESET}"
     else
@@ -163,7 +163,7 @@ fi
 
 # 空入力テスト
 echo -e "${CYAN}空入力テスト${RESET}"
-output=$(./9cc "" 2>&1 >/dev/null)
+output=$(./a.out "" 2>&1 >/dev/null)
 if echo "$output" | grep -q "空のプログラムです"; then
     echo -e "${CYAN}空入力${RESET} ${WHITE}=>${RESET} ${GREEN}error OK${RESET}"
 else
