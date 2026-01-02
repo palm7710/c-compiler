@@ -51,6 +51,20 @@ static void gen_addr(Node *node) {
     error_tok(node->tok, "not an lvalue");
 }
 
+// %rax が指している場所から値を読み込む。
+static void load(Type *ty) {
+    if (ty->kind == TY_ARRAY) {
+        return;
+    }
+    printf("  movq (%%rax), %%rax\n");
+}
+
+// %rax をスタック先頭が指すアドレスに格納する。
+static void store(void) {
+    pop("%rdi");
+    printf("  movq %%rax, (%%rdi)\n");
+}
+
 static void gen_expr(Node *node) {
     switch (node->kind) {
     case ND_NUM:
@@ -62,11 +76,11 @@ static void gen_expr(Node *node) {
         return;
     case ND_VAR:
         gen_addr(node);
-        printf("  movq (%%rax), %%rax\n");
+        load(node->ty);
         return;
     case ND_DEREF:
         gen_expr(node->lhs);
-        printf("  mov (%%rax), %%rax\n");
+        load(node->ty);
         return;
     case ND_ADDR:
         gen_addr(node->lhs);
@@ -75,8 +89,7 @@ static void gen_expr(Node *node) {
         gen_addr(node->lhs);
         push();
         gen_expr(node->rhs);
-        pop("%rdi");
-        printf("  movq %%rax, (%%rdi)\n");
+        store();
         return;
     case ND_FUNCALL: {
         int nargs = 0;
@@ -89,7 +102,7 @@ static void gen_expr(Node *node) {
         for (int i = nargs - 1; i >= 0; i--)
             pop(argreg[i]);
 
-        printf("  mov $0, %%rax\n");
+        printf("  movq $0, %%rax\n");
         printf("  call _%s\n", node->funcname);
         return;
     }
@@ -200,7 +213,7 @@ static void assign_lvar_offsets(Function *prog) {
     {
         int offset = 0;
         for (Obj *var = fn->locals; var; var = var->next) {
-            offset += 8;
+            offset += var->ty->size;
             var->offset = -offset;
         }
         fn->stack_size = align_to(offset, 16);

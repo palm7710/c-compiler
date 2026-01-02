@@ -116,16 +116,21 @@ typedef enum {
     TY_INT,
     TY_PTR,
     TY_FUNC,
+    TY_ARRAY,
 } TypeKind;
 
 struct Type {
     TypeKind kind;
 
     // ポインター
+    int size;   // sizeof()
     Type *base;
 
     // 宣言
     Token *name;
+
+    // 配列
+    int array_len;
 
     // 関数の型
     Type *return_ty;
@@ -139,6 +144,7 @@ bool is_integer(Type *ty);
 Type *copy_type(Type *ty);
 Type *pointer_to(Type *base);
 Type *func_type(Type *return_ty);
+Type *array_of(Type *base, int len);
 void add_type(Node *node);
 
 // codegen.c
