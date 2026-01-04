@@ -25,9 +25,10 @@ int main(int ac, char **av) {
         return 1;
     }
     
+    // トークン化して解析する。
     user_input = av[1];
     Token *tok = tokenize(av[1]);
-    Function *prog = parse(tok);
+    Obj *prog = parse(tok);
 
     // ASTをトラバース（走査）し、アセンブリを出力します。
     codegen(prog);

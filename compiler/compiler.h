@@ -37,22 +37,23 @@ extern char *user_input;
 
 // parse.c
 
-// ローカル変数
+// 変数または関数
 typedef struct Obj Obj;
 struct Obj {
     Obj *next;
-    char *name;  // 変数名
-    Type *ty;    // 型
-    int offset;  // RBPからのオフセット
-};
+    char *name;    // 変数名
+    Type *ty;      // 型
+    bool is_local; // ローカル、またはグローバル/関数
 
-// 関数
-typedef struct Function Function;
-struct Function {
-    Function *next;
-    char *name;
+    // 関数
+    // ローカル変数
+    int offset;
+
+    // グローバル変数または関数
+    bool is_function;
+
+    // 関数
     Obj *params;
-
     Node *body;
     Obj *locals;
     int stack_size;
@@ -108,7 +109,7 @@ struct Node {
     int offset;    // kindがND_LVARの場合のみ使う
 };
 
-Function *parse(Token *tok);
+Obj *parse(Token *tok);
 
 // type.c
 
@@ -156,5 +157,5 @@ bool equal(Token *tok, char *op);
 Token *skip(Token *tok, char *op);
 bool consume(Token **rest, Token *tok, char *str);
 Token *tokenize(char *p);
-Function *parse(Token *tok);
-void codegen(Function *code);
+Obj *parse(Token *tok);
+void codegen(Obj *code);
