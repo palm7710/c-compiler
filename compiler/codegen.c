@@ -247,30 +247,30 @@ static void emit_text(Obj *prog) {
         if (!fn->is_function)
             continue;
 
-        printf("  .globl _%s\n", fn->name);
-        printf("  .text\n");
-        printf("_%s:\n", fn->name);
+        printf("  .globl _%s\n", fn->name); // この関数は外から参照可能とリンカに伝える
+        printf("  .text\n");                // これ以降は命令コード（textセクション）
+        printf("_%s:\n", fn->name);         // 関数の入口ラベル
         current_fn = fn;
 
         // 初期化処理
-        printf("  pushq %%rbp\n");
-        printf("  movq %%rsp, %%rbp\n");
-        printf("  subq $%d, %%rsp\n", fn->stack_size);
+        printf("  pushq %%rbp\n");          // 呼び出し元の rbp をスタックに退避
+        printf("  movq %%rsp, %%rbp\n");    // この関数のスタックフレームを確立
+        printf("  subq $%d, %%rsp\n", fn->stack_size); // ローカル変数領域をまとめて確保
 
         // レジスタ経由で渡された引数をスタックに保存する
         int i = 0;
         for (Obj *var = fn->params; var; var = var->next)
-            printf("  movq %s, %d(%%rbp)\n", argreg[i++], var->offset);
+            printf("  movq %s, %d(%%rbp)\n", argreg[i++], var->offset); // レジスタ渡しされた引数を、スタック上のローカル変数として保存
 
         // コードを出力する
         gen_stmt(fn->body);
         assert(depth == 0);
 
         // 終わり
-        printf(".L.return.%s:\n", fn->name);
-        printf("  movq %%rbp, %%rsp\n");
-        printf("  popq %%rbp\n");
-        printf("  ret\n");
+        printf(".L.return.%s:\n", fn->name); //アセンブリのラベル
+        printf("  movq %%rbp, %%rsp\n");     // ローカル変数全部破棄
+        printf("  popq %%rbp\n");            // 親のスタックフレームに戻る
+        printf("  ret\n");                   // 呼び出し元へ帰る
     }
 }
 
