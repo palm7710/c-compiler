@@ -30,6 +30,10 @@ static Obj *find_var(Token *tok) {
     for (Obj *var = locals; var; var = var->next)
         if (strlen(var->name) == tok->len && !strncmp(tok->loc, var->name, tok->len))
             return var;
+    
+    for (Obj *var = globals; var; var = var->next)
+        if (strlen(var->name) == tok->len && !strncmp(tok->loc, var->name, tok->len))
+            return var;
     return NULL;
 }
 
@@ -604,6 +608,30 @@ static Token *function(Token *tok, Type *basety) {
     return tok;
 }
 
+static Token *global_variable(Token *tok, Type *basety) {
+    bool first = true;
+
+    while (!consume(&tok, tok, ";")) {
+        if (!first)
+            tok = skip(tok, ",");
+        first = false;
+
+        Type *ty = declarator(&tok, tok, basety);
+        new_gvar(get_ident(ty->name), ty);
+    }
+    return tok;
+}
+
+// 後方参照トークン。与えられたトークンが関数定義
+// または宣言の開始である場合にtrueを返します。
+static bool is_function(Token *tok) {
+    if (equal(tok, ";"))
+        return false;
+
+    Type dummy = {};
+    Type *ty = declarator(&tok, tok, &dummy);
+    return ty->kind == TY_FUNC;
+}
 
 // program = (function-definition | global-variable)*
 Obj *parse(Token *tok) {
@@ -611,7 +639,15 @@ Obj *parse(Token *tok) {
     
     while (tok->kind != TK_EOF) {
         Type *basety = declspec(&tok, tok);
-        tok = function(tok, basety);
+        
+        // 関数
+        if (is_function(tok)) {
+            tok = function(tok, basety);
+            continue;
+        }
+
+        // グローバル変数
+        tok = global_variable(tok, basety);
     }
     return globals;
 }
