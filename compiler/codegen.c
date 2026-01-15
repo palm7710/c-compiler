@@ -234,10 +234,10 @@ static void emit_data(Obj *prog) {
         if (var->is_function)
             continue;
 
-        printf("  .data\n");
-        printf("  .globl %s\n", var->name);
-        printf("%s:\n", var->name);
-        printf("  .zero %d\n", var->ty->size);
+        printf("  .data\n");                    // 以降を .data セクション（初期化済み/静的データ領域）として扱う
+        printf("  .globl %s\n", var->name);     // このグローバル変数を他ファイルから参照可能にする
+        printf("%s:\n", var->name);             // グローバル変数の先頭アドレスを示すラベルを定義
+        printf("  .zero %d\n", var->ty->size);  // 変数サイズ分の領域を確保し、すべて 0 で初期化
     }
 }
 
