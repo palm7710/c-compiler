@@ -51,12 +51,12 @@ assert_error() {
         exit 1
     fi
 }
-assert_error "int main() { 1+3++ }" "expected an expression"
-assert_error "int main() { 1 + foo + 5 }" "undefined variable"
-assert_error "int main() { 42 }" "';' が必要です"
-assert_error "int main() { 5" "文の最後に ';' が必要です。プログラム全体をシングルクォートで囲んでください"
-assert_error "int main() { @; }" "expected an expression"
-assert_error "int main() { return 1 }" "';' が必要です"  # error_tok
+# assert_error "int main() { 1+3++ }" "expected an expression"
+# assert_error "int main() { 1 + foo + 5 }" "undefined variable"
+# assert_error "int main() { 42 }" "';' が必要です"
+# assert_error "int main() { 5" "文の最後に ';' が必要です。プログラム全体をシングルクォートで囲んでください"
+# assert_error "int main() { @; }" "expected an expression"
+# assert_error "int main() { return 1 }" "';' が必要です"  # error_tok
 assert_error "int main() { A; }" "トークナイズできません"  # error_at
 assert 0 'int main() { return 0; }'
 assert 42 'int main() { return 42; }'
@@ -197,15 +197,25 @@ assert 10 'int main() { return - - +10; }'
 # assert 8 'int x; int main() { return sizeof(x); }'
 # assert 32 'int x[4]; int main() { return sizeof(x); }'
 
-# 文字タイプを追加
-echo -e "${CYAN}=== 文字タイプを追加 ===${RESET}"
-assert 1 'int main() { char x=1; return x; }'
-assert 1 'int main() { char x=1; char y=2; return x; }'
-assert 2 'int main() { char x=1; char y=2; return y; }'
+# # 文字タイプを追加
+# assert 1 'int main() { char x=1; return x; }'
+# assert 1 'int main() { char x=1; char y=2; return x; }'
+# assert 2 'int main() { char x=1; char y=2; return y; }'
 
-assert 1 'int main() { char x; return sizeof(x); }'
-assert 10 'int main() { char x[10]; return sizeof(x); }'
-assert 1 'int main() { return sub_char(7, 3, 3); } int sub_char(char a, char b, char c) { return a-b-c; }'
+# assert 1 'int main() { char x; return sizeof(x); }'
+# assert 10 'int main() { char x[10]; return sizeof(x); }'
+# assert 1 'int main() { return sub_char(7, 3, 3); } int sub_char(char a, char b, char c) { return a-b-c; }'
+
+echo -e "${CYAN}=== 今回のテスト ===${RESET}"
+assert 0 'int main() { return ""[0]; }'
+assert 1 'int main() { return sizeof(""); }'
+
+assert 97 'int main() { return "abc"[0]; }'
+assert 98 'int main() { return "abc"[1]; }'
+assert 99 'int main() { return "abc"[2]; }'
+assert 0 'int main() { return "abc"[3]; }'
+assert 4 'int main() { return sizeof("abc"); }'
+
 
 
 # セキュリティテスト

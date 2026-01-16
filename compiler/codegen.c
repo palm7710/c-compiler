@@ -245,7 +245,13 @@ static void emit_data(Obj *prog) {
         printf("  .data\n");                    // 以降を .data セクション（初期化済み/静的データ領域）として扱う
         printf("  .globl %s\n", var->name);     // このグローバル変数を他ファイルから参照可能にする
         printf("%s:\n", var->name);             // グローバル変数の先頭アドレスを示すラベルを定義
-        printf("  .zero %d\n", var->ty->size);  // 変数サイズ分の領域を確保し、すべて 0 で初期化
+        
+        if (var->init_data) {
+            for (int i = 0; i < var->ty->size; i++)
+                printf("  .byte %d\n", var->init_data[i]);
+        } else {
+            printf("  .zero %d\n", var->ty->size);  // 変数サイズ分の領域を確保し、すべて 0 で初期化
+        }
     }
 }
 
