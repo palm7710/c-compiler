@@ -1,7 +1,8 @@
 #include "compiler.h"
 
 static int depth;
-static char *argreg[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
+static char *argreg8[] = {"%dil", "%sil", "%dl", "%cl", "%r8b", "%r9b"};
+static char *argreg64[] = {"%rdi", "%rsi", "%rdx", "%rcx", "%r8", "%r9"};
 static Obj *current_fn;
 #define MAX_STACK_DEPTH 10000
 
@@ -62,13 +63,20 @@ static void load(Type *ty) {
     if (ty->kind == TY_ARRAY) {
         return;
     }
-    printf("  movq (%%rax), %%rax\n");
+    if (ty->size == 1)
+        printf("  movsbq (%%rax), %%rax\n");
+    else
+        printf("  movq (%%rax), %%rax\n");
 }
 
 // %rax をスタック先頭が指すアドレスに格納する。
-static void store(void) {
+static void store(Type *ty) {
     pop("%rdi");
-    printf("  movq %%rax, (%%rdi)\n");
+
+    if (ty->size == 1)
+        printf("  movb %%al, (%%rdi)\n");
+    else
+        printf("  movq %%rax, (%%rdi)\n");
 }
 
 static void gen_expr(Node *node) {
@@ -95,7 +103,7 @@ static void gen_expr(Node *node) {
         gen_addr(node->lhs);
         push();
         gen_expr(node->rhs);
-        store();
+        store(node->ty);
         return;
     case ND_FUNCALL: {
         int nargs = 0;
@@ -106,7 +114,7 @@ static void gen_expr(Node *node) {
         }
 
         for (int i = nargs - 1; i >= 0; i--)
-            pop(argreg[i]);
+            pop(argreg64[i]);
 
         printf("  movq $0, %%rax\n");
         printf("  call _%s\n", node->funcname);
@@ -259,9 +267,13 @@ static void emit_text(Obj *prog) {
 
         // レジスタ経由で渡された引数をスタックに保存する
         int i = 0;
-        for (Obj *var = fn->params; var; var = var->next)
-            printf("  movq %s, %d(%%rbp)\n", argreg[i++], var->offset); // レジスタ渡しされた引数を、スタック上のローカル変数として保存
-
+        for (Obj *var = fn->params; var; var = var->next) {
+            if (var->ty->size == 1)
+                printf("  movb %s, %d(%%rbp)\n", argreg8[i++], var->offset);
+            else
+                printf("  movq %s, %d(%%rbp)\n", argreg64[i++], var->offset); // レジスタ渡しされた引数を、スタック上のローカル変数として保存
+        }
+            
         // コードを出力する
         gen_stmt(fn->body);
         assert(depth == 0);

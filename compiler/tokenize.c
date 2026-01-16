@@ -97,7 +97,7 @@ static int read_punct(char *p) {
 }
 
 static bool is_keyword(Token *tok) {
-    static char *kw[] = {"return", "if", "else", "for", "while", "int", "sizeof"};
+    static char *kw[] = {"return", "if", "else", "for", "while", "int", "sizeof", "char"};
 
     for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++)
         if (equal(tok, kw[i]))
@@ -183,6 +183,8 @@ Token *tokenize(char *p) {
             } else if (len == 5 && memcmp(start, "while", 5) == 0) {
                 cur = cur->next = new_token(TK_PUNCT, start, p);
             } else if (len == 3 && memcmp(start, "int", 3) == 0) {
+                cur = cur->next = new_token(TK_PUNCT, start, p);
+            } else if (len == 4 && memcmp(start, "char", 4) == 0) {
                 cur = cur->next = new_token(TK_PUNCT, start, p);
             } else {
                 cur = cur->next = new_token(TK_IDENT, start, p);
