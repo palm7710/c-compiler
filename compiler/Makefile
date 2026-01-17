@@ -1,6 +1,6 @@
 CFLAGS=-std=c11 -g -static
 SRCS =$(wildcard *.c)
-OBJS=$(SRCS: .c=.o)
+OBJS=$(SRCS:.c=.o)
 
 a.out: $(OBJS)
 		$(CC) -o a.out $(OBJS) $(LDFLAGS)

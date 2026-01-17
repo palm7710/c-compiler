@@ -17,7 +17,7 @@ int add6(int a, int b, int c, int d, int e, int f) {
 }
 EOF
 
-cc -arch x86_64 main.c codegen.c parse.c tokenize.c type.c -o a.out || exit 1
+cc -arch x86_64 main.c codegen.c parse.c strings.c tokenize.c type.c -o a.out || exit 1
 
 assert() {
     expected="$1"

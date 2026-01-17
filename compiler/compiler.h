@@ -11,6 +11,9 @@
 typedef struct Type Type;
 typedef struct Node Node;
 
+// string.c
+char *format(char *fmt, ...);
+
 // tokenize.c
 
 // トークンの種類
