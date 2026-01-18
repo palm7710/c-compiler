@@ -107,16 +107,16 @@ static bool is_keyword(Token *tok) {
 
 static int read_escaped_char(char *p) {
     switch (*p) {
-        case 'a': return '\a';
-        case 'b': return '\b';
-        case 't': return '\t';
-        case 'n': return '\n';
-        case 'v': return '\v';
-        case 'f': return '\f';
-        case 'r': return '\r';
+        case 'a': return '\a'; // ベル文字（端末でビープ音）
+        case 'b': return '\b'; // バックスペース（1文字戻る）
+        case 't': return '\t'; // 水平タブ（Tabキー）
+        case 'n': return '\n'; // 改行（newline）
+        case 'v': return '\v'; // 垂直タブ（ほぼ使われない）
+        case 'f': return '\f'; // 改ページ（ページ送り）
+        case 'r': return '\r'; // 復帰（行頭に戻る）
         // [GNU] ASCIIエスケープ文字を表す \e は、GNU C の拡張機能。
-        case 'e': return 27;
-        default: return *p;
+        case 'e': return 27;   // ESCキー（ASCIIコード27）
+        default: return *p;   // それ以外はそのままの文字
     }
 }
 
