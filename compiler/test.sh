@@ -240,6 +240,7 @@ assert 10 'int main() { return - - +10; }'
 # assert 104 'int main() { return "\1500"[0]; }'
 
 echo -e "${CYAN}=== 今回のテスト ===${RESET}"
+# 16新数
 assert 0 'int main() { return "\x00"[0]; }'
 assert 119 'int main() { return "\x77"[0]; }'
 assert 165 'int main() { return "\xA5"[0]; }'
