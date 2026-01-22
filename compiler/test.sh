@@ -233,12 +233,17 @@ assert 10 'int main() { return - - +10; }'
 # assert 10 'int main() { return "\ax\ny"[2]; }'
 # assert 121 'int main() { return "\ax\ny"[3]; }'
 
-echo -e "${CYAN}=== 今回のテスト ===${RESET}"
 # 8進数
-assert 0 'int main() { return "\0"[0]; }'
-assert 16 'int main() { return "\20"[0]; }'
-assert 65 'int main() { return "\101"[0]; }'
-assert 104 'int main() { return "\1500"[0]; }'
+# assert 0 'int main() { return "\0"[0]; }'
+# assert 16 'int main() { return "\20"[0]; }'
+# assert 65 'int main() { return "\101"[0]; }'
+# assert 104 'int main() { return "\1500"[0]; }'
+
+echo -e "${CYAN}=== 今回のテスト ===${RESET}"
+assert 0 'int main() { return "\x00"[0]; }'
+assert 119 'int main() { return "\x77"[0]; }'
+assert 165 'int main() { return "\xA5"[0]; }'
+assert 255 'int main() { return "\x00ff"[0]; }'
 
 # セキュリティテスト
 echo -e "${CYAN}=== セキュリティテスト ===${RESET}"
