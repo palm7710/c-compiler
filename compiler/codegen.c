@@ -7,6 +7,7 @@ static Obj *current_fn;
 #define MAX_STACK_DEPTH 10000
 
 static void gen_expr(Node *node);
+static void gen_stmt(Node *node);
 
 static int count(void) {
     static int i = 1;
@@ -104,6 +105,10 @@ static void gen_expr(Node *node) {
         push();
         gen_expr(node->rhs);
         store(node->ty);
+        return;
+    case ND_STMT_EXPR:
+        for (Node *n = node->body; n; n = n->next)
+            gen_stmt(n);
         return;
     case ND_FUNCALL: {
         int nargs = 0;

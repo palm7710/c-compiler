@@ -87,7 +87,8 @@ typedef enum {
     ND_BLOCK,     // { ... }
     ND_FUNCALL,   // 関数呼び出し
     ND_EXPR_STMT, // セミコロン
-    ND_VAR,       //変数
+    ND_STMT_EXPR, // ステートメント式（複数の文）
+    ND_VAR,       // 変数
     ND_NUM,       // 整数
 } NodeKind;
 
@@ -106,7 +107,7 @@ struct Node {
     // "for"
     Node *init;
     Node *inc;
-    //block
+    //block か　ステートメント式（複数の文）
     Node *body;
     // Function call
     char *funcname;
