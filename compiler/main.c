@@ -27,7 +27,7 @@ int main(int ac, char **av) {
     
     // トークン化して解析する。
     user_input = av[1];
-    Token *tok = tokenize(av[1]);
+    Token *tok = tokenize_file(av[1]);
     Obj *prog = parse(tok);
 
     // ASTをトラバース（走査）し、アセンブリを出力します。

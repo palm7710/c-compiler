@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L // POSIX標準（2008年版）の機能を有効
 #include <assert.h>
 #include <ctype.h>
+#include <errno.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -167,6 +168,6 @@ void error_tok(Token *tok, char *fmt, ...);
 bool equal(Token *tok, char *op);
 Token *skip(Token *tok, char *op);
 bool consume(Token **rest, Token *tok, char *str);
-Token *tokenize(char *p);
+Token *tokenize_file(char *filename);
 Obj *parse(Token *tok);
 void codegen(Obj *code);

@@ -23,7 +23,7 @@ assert() {
     expected="$1"
     input="$2"
 
-    ./a.out "$input" > tmp.s
+    echo "$input" | ./a.out - > tmp.s
     cc -arch x86_64 -c tmp.s -o tmp.o
     cc -arch x86_64 tmp.o -o tmp tmp2.o 2>/dev/null
     ./tmp
@@ -41,7 +41,7 @@ assert_error() {
     input="$1"
     expected="$2"
 
-    output=$(./a.out "$input" 2>&1 >/dev/null)
+    output=$(echo "$input" | ./a.out - 2>&1 >/dev/null)
 
     if echo "$output" | grep -q "$expected"; then
         echo -e "${CYAN}${input}${RESET} ${WHITE}=>${RESET} ${GREEN}error OK${RESET}"
