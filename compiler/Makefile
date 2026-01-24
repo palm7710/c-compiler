@@ -1,4 +1,4 @@
-CFLAGS=-std=c11 -g -static
+CFLAGS=-std=c11 -g -static -arch x86_64
 SRCS =$(wildcard *.c)
 OBJS=$(SRCS:.c=.o)
 
@@ -9,6 +9,7 @@ $(OBJS): compiler.h
 
 test: a.out
 		./test.sh
+		./test-driver.sh
 
 clean:
 		rm -f a.out *.o *~ tmp*

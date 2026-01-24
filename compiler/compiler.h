@@ -170,4 +170,4 @@ Token *skip(Token *tok, char *op);
 bool consume(Token **rest, Token *tok, char *str);
 Token *tokenize_file(char *filename);
 Obj *parse(Token *tok);
-void codegen(Obj *code);
+void codegen(Obj *prog, FILE *out);

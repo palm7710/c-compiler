@@ -23,7 +23,7 @@ assert() {
     expected="$1"
     input="$2"
 
-    echo "$input" | ./a.out - > tmp.s
+    echo "$input" | ./a.out -o tmp.s -
     cc -arch x86_64 -c tmp.s -o tmp.o
     cc -arch x86_64 tmp.o -o tmp tmp2.o 2>/dev/null
     ./tmp
