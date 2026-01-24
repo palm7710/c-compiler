@@ -9,6 +9,14 @@ static Obj *current_fn;
 static void gen_expr(Node *node);
 static void gen_stmt(Node *node);
 
+static void println(char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vprintf(fmt, ap);
+    va_end(ap);
+    printf("\n");
+}
+
 static int count(void) {
     static int i = 1;
     return i++;
@@ -18,7 +26,7 @@ static void push(void) {
     if (depth >= MAX_STACK_DEPTH) {
         error("スタックが深すぎます");
     }
-    printf("  pushq %%rax\n");
+    println("  pushq %%rax");
     depth++;
 }
 
@@ -26,7 +34,7 @@ static void pop(char *arg) {
     if (depth <= 0) {
         error("スタックが空です");
     }
-    printf("  popq %s\n", arg);
+    println("  popq %s", arg);
     depth--;
 }
 
@@ -43,10 +51,10 @@ static void gen_addr(Node *node) {
     case ND_VAR:
         if (node->var->is_local) {
             // ローカル変数
-            printf("  lea %d(%%rbp), %%rax\n", node->var->offset);
+            println("  lea %d(%%rbp), %%rax", node->var->offset);
         } else {
             // グローバル関数
-            printf("  lea %s(%%rip), %%rax\n", node->var->name);
+            println("  lea %s(%%rip), %%rax", node->var->name);
         }
         return;
     case ND_DEREF:
@@ -65,9 +73,9 @@ static void load(Type *ty) {
         return;
     }
     if (ty->size == 1)
-        printf("  movsbq (%%rax), %%rax\n");
+        println("  movsbq (%%rax), %%rax");
     else
-        printf("  movq (%%rax), %%rax\n");
+        println("  movq (%%rax), %%rax");
 }
 
 // %rax をスタック先頭が指すアドレスに格納する。
@@ -75,19 +83,19 @@ static void store(Type *ty) {
     pop("%rdi");
 
     if (ty->size == 1)
-        printf("  movb %%al, (%%rdi)\n");
+        println("  movb %%al, (%%rdi)");
     else
-        printf("  movq %%rax, (%%rdi)\n");
+        println("  movq %%rax, (%%rdi)");
 }
 
 static void gen_expr(Node *node) {
     switch (node->kind) {
     case ND_NUM:
-        printf("  movq $%d, %%rax\n", node->val);
+        println("  movq $%d, %%rax", node->val);
         return;
     case ND_NEG:
         gen_expr(node->lhs);
-        printf("  negq %%rax\n");
+        println("  negq %%rax");
         return;
     case ND_VAR:
         gen_addr(node);
@@ -121,8 +129,8 @@ static void gen_expr(Node *node) {
         for (int i = nargs - 1; i >= 0; i--)
             pop(argreg64[i]);
 
-        printf("  movq $0, %%rax\n");
-        printf("  call _%s\n", node->funcname);
+        println("  movq $0, %%rax");
+        println("  call _%s", node->funcname);
         return;
     }
     default:
@@ -137,40 +145,40 @@ static void gen_expr(Node *node) {
 
     switch(node->kind) {
     case ND_ADD:
-        printf("  addq %%rdi, %%rax\n");
+        println("  addq %%rdi, %%rax");
         return;
     case ND_SUB:
-        printf("  subq %%rax, %%rdi\n");
-        printf("  movq %%rdi, %%rax\n");
+        println("  subq %%rax, %%rdi");
+        println("  movq %%rdi, %%rax");
         return;
     case ND_MUL:
-        printf("  imulq %%rdi, %%rax\n");
+        println("  imulq %%rdi, %%rax");
         return;
     case ND_DIV:
-        printf("  movq %%rax, %%rcx\n");
-        printf("  movq %%rdi, %%rax\n");
-        printf("  cqo\n");
-        printf("  idivq %%rcx\n");
+        println("  movq %%rax, %%rcx");
+        println("  movq %%rdi, %%rax");
+        println("  cqo");
+        println("  idivq %%rcx");
         return;
     case ND_EQ:
-        printf("  cmpq %%rax, %%rdi\n");
-        printf("  sete %%al\n");
-        printf("  movzbq %%al, %%rax\n");
+        println("  cmpq %%rax, %%rdi");
+        println("  sete %%al");
+        println("  movzbq %%al, %%rax");
         return;
     case ND_NE:
-        printf("  cmpq %%rax, %%rdi\n");
-        printf("  setne %%al\n");
-        printf("  movzbq %%al, %%rax\n");
+        println("  cmpq %%rax, %%rdi");
+        println("  setne %%al");
+        println("  movzbq %%al, %%rax");
         return;
     case ND_LT:
-        printf("  cmpq %%rax, %%rdi\n");
-        printf("  setl %%al\n");
-        printf("  movzbq %%al, %%rax\n");
+        println("  cmpq %%rax, %%rdi");
+        println("  setl %%al");
+        println("  movzbq %%al, %%rax");
         return;
     case ND_LE:
-        printf("  cmpq %%rax, %%rdi\n");
-        printf("  setle %%al\n");
-        printf("  movzbq %%al, %%rax\n");
+        println("  cmpq %%rax, %%rdi");
+        println("  setle %%al");
+        println("  movzbq %%al, %%rax");
         return;
     default:
         return;
@@ -184,31 +192,31 @@ static void gen_stmt(Node *node) {
     case ND_IF: {
         int c = count();
         gen_expr(node->cond);
-        printf("  cmp $0, %%rax\n");
-        printf("  je  .L.else.%d\n", c);
+        println("  cmp $0, %%rax");
+        println("  je  .L.else.%d", c);
         gen_stmt(node->then);
-        printf("  jmp .L.end.%d\n", c);
-        printf(".L.else.%d:\n", c);
+        println("  jmp .L.end.%d", c);
+        println(".L.else.%d:", c);
         if (node->els)
             gen_stmt(node->els);
-        printf(".L.end.%d:\n", c);
+        println(".L.end.%d:", c);
         return;
     }
     case ND_FOR: {
         int c = count();
         if (node->init)
             gen_stmt(node->init);
-        printf(".L.begin.%d:\n", c);
+        println(".L.begin.%d:", c);
         if (node->cond) {
             gen_expr(node->cond);
-            printf("  cmp $0, %%rax\n");
-            printf("  je  .L.end.%d\n", c);
+            println("  cmp $0, %%rax");
+            println("  je  .L.end.%d", c);
         }
         gen_stmt(node->then);
         if (node->inc)
             gen_expr(node->inc);
-        printf("  jmp .L.begin.%d\n", c);
-        printf(".L.end.%d:\n", c);
+        println("  jmp .L.begin.%d", c);
+        println(".L.end.%d:", c);
         return;
     }
     case ND_BLOCK:
@@ -217,7 +225,7 @@ static void gen_stmt(Node *node) {
         return;
     case ND_RETURN:
         gen_expr(node->lhs);
-        printf("  jmp .L.return.%s\n", current_fn->name);
+        println("  jmp .L.return.%s", current_fn->name);
         return;
     case ND_EXPR_STMT:
         gen_expr(node->lhs);
@@ -247,15 +255,15 @@ static void emit_data(Obj *prog) {
         if (var->is_function)
             continue;
 
-        printf("  .data\n");                    // 以降を .data セクション（初期化済み/静的データ領域）として扱う
-        printf("  .globl %s\n", var->name);     // このグローバル変数を他ファイルから参照可能にする
-        printf("%s:\n", var->name);             // グローバル変数の先頭アドレスを示すラベルを定義
+        println("  .data");                    // 以降を .data セクション（初期化済み/静的データ領域）として扱う
+        println("  .globl %s", var->name);     // このグローバル変数を他ファイルから参照可能にする
+        println("%s:", var->name);             // グローバル変数の先頭アドレスを示すラベルを定義
         
         if (var->init_data) {
             for (int i = 0; i < var->ty->size; i++)
-                printf("  .byte %d\n", var->init_data[i]);
+                println("  .byte %d", var->init_data[i]);
         } else {
-            printf("  .zero %d\n", var->ty->size);  // 変数サイズ分の領域を確保し、すべて 0 で初期化
+            println("  .zero %d", var->ty->size);  // 変数サイズ分の領域を確保し、すべて 0 で初期化
         }
     }
 }
@@ -266,23 +274,23 @@ static void emit_text(Obj *prog) {
         if (!fn->is_function)
             continue;
 
-        printf("  .globl _%s\n", fn->name); // この関数は外から参照可能とリンカに伝える
-        printf("  .text\n");                // これ以降は命令コード（textセクション）
-        printf("_%s:\n", fn->name);         // 関数の入口ラベル
+        println("  .globl _%s", fn->name); // この関数は外から参照可能とリンカに伝える
+        println("  .text");                // これ以降は命令コード（textセクション）
+        println("_%s:", fn->name);         // 関数の入口ラベル
         current_fn = fn;
 
         // 初期化処理
-        printf("  pushq %%rbp\n");          // 呼び出し元の rbp をスタックに退避
-        printf("  movq %%rsp, %%rbp\n");    // この関数のスタックフレームを確立
-        printf("  subq $%d, %%rsp\n", fn->stack_size); // ローカル変数領域をまとめて確保
+        println("  pushq %%rbp");          // 呼び出し元の rbp をスタックに退避
+        println("  movq %%rsp, %%rbp");    // この関数のスタックフレームを確立
+        println("  subq $%d, %%rsp", fn->stack_size); // ローカル変数領域をまとめて確保
 
         // レジスタ経由で渡された引数をスタックに保存する
         int i = 0;
         for (Obj *var = fn->params; var; var = var->next) {
             if (var->ty->size == 1)
-                printf("  movb %s, %d(%%rbp)\n", argreg8[i++], var->offset);
+                println("  movb %s, %d(%%rbp)", argreg8[i++], var->offset);
             else
-                printf("  movq %s, %d(%%rbp)\n", argreg64[i++], var->offset); // レジスタ渡しされた引数を、スタック上のローカル変数として保存
+                println("  movq %s, %d(%%rbp)", argreg64[i++], var->offset); // レジスタ渡しされた引数を、スタック上のローカル変数として保存
         }
             
         // コードを出力する
@@ -290,10 +298,10 @@ static void emit_text(Obj *prog) {
         assert(depth == 0);
 
         // 終わり
-        printf(".L.return.%s:\n", fn->name); //アセンブリのラベル
-        printf("  movq %%rbp, %%rsp\n");     // ローカル変数全部破棄
-        printf("  popq %%rbp\n");            // 親のスタックフレームに戻る
-        printf("  ret\n");                   // 呼び出し元へ帰る
+        println(".L.return.%s:", fn->name); //アセンブリのラベル
+        println("  movq %%rbp, %%rsp");     // ローカル変数全部破棄
+        println("  popq %%rbp");            // 親のスタックフレームに戻る
+        println("  ret");                   // 呼び出し元へ帰る
     }
 }
 
