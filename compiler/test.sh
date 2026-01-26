@@ -251,10 +251,14 @@ assert 10 'int main() { return - - +10; }'
 # assert 6 'int main() { return ({ 1; }) + ({ 2; }) + ({ 3; }); }'
 # assert 3 'int main() { return ({ int x=3; x; }); }'
 
+# assert 2 'int main() { /* return 1; */ return 2; }'
+# assert 2 'int main() { // return 1;
+# return 2; }'
+
 echo -e "${CYAN}=== 今回のテスト ===${RESET}"
-assert 2 'int main() { /* return 1; */ return 2; }'
-assert 2 'int main() { // return 1;
-return 2; }'
+assert 2 'int main() { int x=2; { int x=3; } return x; }'
+assert 2 'int main() { int x=2; { int x=3; } { int y=4; return x; }}'
+assert 3 'int main() { int x=2; { x=3; } return x; }'
 
 # セキュリティテスト
 echo -e "${CYAN}=== セキュリティテスト ===${RESET}"
