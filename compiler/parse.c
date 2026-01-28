@@ -54,7 +54,7 @@ static void leave_scope(void) {
 
 // 名前からローカル変数を検索します。
 static Obj *find_var(Token *tok) {
-    for (Scope *sc = scop; sc; sc = sc->next)
+    for (Scope *sc = scope; sc; sc = sc->next)
         for (VarScope *sc2 = sc->vars; sc2; sc2 = sc2->next)
             if (equal(tok, sc2->name))
                 return sc2->var;
@@ -98,11 +98,11 @@ static Node *new_var_node(Obj *var, Token *tok) {
     return node;
 }
 
-static VarScope *push_scope(char *name; Obj *var) {
+static VarScope *push_scope(char *name, Obj *var) {
     VarScope *sc = calloc(1, sizeof(VarScope));
     sc->name = name;
     sc->var = var;
-    sc->next = scop->vars;
+    sc->next = scope->vars;
     scope->vars = sc;
     return sc;
 }
@@ -243,8 +243,6 @@ static Node *declaration(Token **rest, Token *tok) {
     Node head = {};
     Node *cur = &head;
 
-    enter_scope();
-
     int i = 0;
 
     while (!equal(tok, ";")) {
@@ -336,6 +334,7 @@ static Node *compound_stmt(Token **rest, Token *tok) {
     Node *node = new_node(ND_BLOCK, tok);
     Node head = {};
     Node *cur = &head;
+    enter_scope();
     while (!equal(tok, "}")) {
         if (is_typename(tok))
             cur = cur->next = declaration(&tok, tok);
@@ -688,7 +687,7 @@ static Token *function(Token *tok, Type *basety) {
     tok = skip(tok, "{");
     fn->body = compound_stmt(&tok, tok);
     fn->locals = locals;
-    enter_scope();
+    leave_scope();
     return tok;
 }
 
